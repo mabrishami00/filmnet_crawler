@@ -9,10 +9,18 @@
 
 BOT_NAME = "filmnet"
 
-SPIDER_MODULES = ["filmnet.spiders"]
-NEWSPIDER_MODULE = "filmnet.spiders"
+SPIDER_MODULES = ["filmnet.filmnet.spiders"]
+NEWSPIDER_MODULE = "filmnet.filmnet.spiders"
 
 
+import sys
+sys.path.append('/home/mahdi/Documents/filmnet_crawler/')
+
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings'
+
+import django
+django.setup()
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "filmnet (+http://www.yourdomain.com)"
 
@@ -62,9 +70,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "filmnet.pipelines.FilmnetPipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "filmnet.filmnet.pipelines.FilmnetPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
