@@ -6,8 +6,28 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from asgiref.sync import sync_to_async
+from filmnet.filmnet.items import MovieItem
+from main.models import Movie
 
 
 class FilmnetPipeline:
-    def process_item(self, item, spider):
+    async def process_item(self, item, spider):
+        await self.save_item_async(item)
         return item
+
+    @sync_to_async
+    def save_item_async(self, item):
+        movie = Movie(
+            title=item["title"],
+            summary=item["summary"],
+            publish_date=item["publish_date"],
+            release_year=item["release_year"],
+            rate=item["rate"],
+            duration=item["duration"],
+            link=item["link"],
+        )
+        print(movie)
+        print("$"*100)
+        movie.save()
+        return movie
