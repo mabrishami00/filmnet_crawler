@@ -9,7 +9,11 @@ from itemadapter import ItemAdapter
 from asgiref.sync import sync_to_async
 from filmnet.filmnet.items import MovieItem
 from main.models import Movie
+import re
 
+def remove_tags(text):
+    clean_text = re.sub('<[^<]+?>', '', text)
+    return clean_text
 
 class FilmnetPipeline:
     async def process_item(self, item, spider):
@@ -18,6 +22,7 @@ class FilmnetPipeline:
 
     @sync_to_async
     def save_item_async(self, item):
+        item["summary"] = remove_tags(item["summary"])
         movie = Movie(
             title=item["title"],
             summary=item["summary"],
