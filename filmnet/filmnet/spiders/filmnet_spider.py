@@ -2,7 +2,7 @@ import scrapy
 import json
 
 from main.models import Category
-from filmnet.filmnet.items import MovieItem, CategoryItem, ImageItem
+from filmnet.filmnet.items import MovieItem, CategoryItem, ImageItem, ArtistItem
 
 
 class FilmnetSpiderSpider(scrapy.Spider):
@@ -35,15 +35,31 @@ class FilmnetSpiderSpider(scrapy.Spider):
             movie_item["release_year"] = movie.get("year")
             movie_item["rate"] = movie.get("rate")
             movie_item["duration"] = movie.get("duration")
-            movie_item[
-                "link"
-            ] = f"https://filmnet.ir/contents/{movie.get('short_id')}/{movie.get('slug')}"
+            link = f"https://filmnet.ir/contents/{movie.get('short_id')}/{movie.get('slug')}"
+            movie_item["link"] = link
             movie_item["categories"] = category_names
             movie_item["type"] = movie.get("type")
+
+
             if movie.get("type") == "single_video":
                 image_urls.append(movie.get("cover_image").get("path"))
-
-            yield movie_item
+                yield scrapy.Request(link, callback=self.parse_detail, cb_kwargs={'movie_item': movie_item})
         image_item = ImageItem()
         image_item["image_urls"] = image_urls
         yield image_item
+
+
+    def parse_detail(self, response, movie_item):
+        all_tags = response.css(".css-165by6p").extract()
+        artist_names = []
+        for tag in all_tags:
+            selector = scrapy.Selector(text=tag)
+            if selector.css('p.css-1io4wcd.e1eum8tf0::text').get() == 'بازیگر':
+                artist_name = selector.css('p.css-1wuywbg.e1eum8tf0::text').get()
+                artist_names.append(artist_name)
+                artist_item = ArtistItem()
+                artist_item["name"] = artist_name
+                yield artist_item
+        movie_item['artists'] = artist_names 
+        yield movie_item
+
