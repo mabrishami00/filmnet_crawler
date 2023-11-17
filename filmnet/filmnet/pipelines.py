@@ -7,8 +7,8 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from asgiref.sync import sync_to_async
-from filmnet.filmnet.items import MovieItem, CategoryItem
-from main.models import Movie, Category
+from filmnet.filmnet.items import MovieItem, CategoryItem, ArtistItem
+from main.models import Movie, Category, Artist
 import re
 
 
@@ -40,7 +40,9 @@ class FilmnetPipeline:
                 movie.categories.add(
                     *Category.objects.filter(title__in=item["categories"])
                 )
-                movie.save()
+                movie.artists.add(
+                    *Artist.objects.filter(name__in=item["artists"])
+                )
                 return movie
             return None
 
@@ -49,4 +51,11 @@ class FilmnetPipeline:
                 category = Category(type=item["type"], title=item["title"])
                 category.save()
                 return category
+            return None
+
+        if isinstance(item, ArtistItem):
+            if not Artist.objects.filter(name=item["name"]).exists():
+                artist = Artist(name=item["name"])
+                artist.save()
+                return artist
             return None
