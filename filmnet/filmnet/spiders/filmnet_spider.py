@@ -62,11 +62,22 @@ class FilmnetSpiderSpider(scrapy.Spider):
         artist_names = []
         for tag in all_tags:
             selector = scrapy.Selector(text=tag)
-            if selector.css("p.css-1io4wcd.e1eum8tf0::text").get() == "بازیگر":
+
+            if "بازیگر" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
                 artist_name = selector.css("p.css-1wuywbg.e1eum8tf0::text").get()
                 artist_names.append(artist_name)
                 artist_item = ArtistItem()
                 artist_item["name"] = artist_name
                 yield artist_item
+            if "کارگردان" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
+                movie_item["director"] = selector.css(
+                    "p.css-1wuywbg.e1eum8tf0::text"
+                ).get()
+
+            if "نویسنده" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
+                movie_item["author"] = selector.css(
+                    "p.css-1wuywbg.e1eum8tf0::text"
+                ).get()
+
         movie_item["artists"] = artist_names
         yield movie_item
