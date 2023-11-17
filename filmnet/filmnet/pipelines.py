@@ -25,24 +25,28 @@ class FilmnetPipeline:
     @sync_to_async
     def save_item_async(self, item):
         if isinstance(item, MovieItem):
-            item["summary"] = remove_tags(item["summary"])
-            print(item)
-            print("%" * 150)
-            movie = Movie(
-                title=item["title"],
-                summary=item["summary"],
-                publish_date=item["publish_date"],
-                release_year=item["release_year"],
-                rate=item["rate"],
-                duration=item["duration"],
-                link=item["link"],
-            )
-            # movie.save(commit=False)
-            movie.save()
-            movie.categories.add(*Category.objects.filter(title__in=item["categories"]))
-            movie.save()
-            return movie
+            if not Movie.objects.filter(link=item["link"]).exists() and item["type"] == "single_video":
+                item["summary"] = remove_tags(item["summary"])
+                movie = Movie(
+                    title=item["title"],
+                    summary=item["summary"],
+                    publish_date=item["publish_date"],
+                    release_year=item["release_year"],
+                    rate=item["rate"],
+                    duration=item["duration"],
+                    link=item["link"],
+                )
+                movie.save()
+                movie.categories.add(
+                    *Category.objects.filter(title__in=item["categories"])
+                )
+                movie.save()
+                return movie
+            return None
+
         if isinstance(item, CategoryItem):
-            category = Category(type=item["type"], title=item["title"])
-            category.save()
-            return category
+            if not Category.objects.filter(title=item["title"]).exists():
+                category = Category(type=item["type"], title=item["title"])
+                category.save()
+                return category
+            return None
