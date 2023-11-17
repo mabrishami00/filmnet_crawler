@@ -25,7 +25,10 @@ class FilmnetPipeline:
     @sync_to_async
     def save_item_async(self, item):
         if isinstance(item, MovieItem):
-            if not Movie.objects.filter(link=item["link"]).exists() and item["type"] == "single_video":
+            if (
+                not Movie.objects.filter(link=item["link"]).exists()
+                and item["type"] == "single_video"
+            ):
                 item["summary"] = remove_tags(item["summary"])
                 movie = Movie(
                     title=item["title"],
@@ -35,14 +38,14 @@ class FilmnetPipeline:
                     rate=item["rate"],
                     duration=item["duration"],
                     link=item["link"],
+                    director=item["director"],
+                    author=item["author"],
                 )
                 movie.save()
                 movie.categories.add(
                     *Category.objects.filter(title__in=item["categories"])
                 )
-                movie.artists.add(
-                    *Artist.objects.filter(name__in=item["artists"])
-                )
+                movie.artists.add(*Artist.objects.filter(name__in=item["artists"]))
                 return movie
             return None
 
