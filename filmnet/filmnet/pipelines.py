@@ -31,15 +31,15 @@ class FilmnetPipeline:
             ):
                 item["summary"] = remove_tags(item["summary"])
                 movie = Movie(
-                    title=item["title"],
-                    summary=item["summary"],
-                    publish_date=item["publish_date"],
-                    release_year=item["release_year"],
-                    rate=item["rate"],
-                    duration=item["duration"],
-                    link=item["link"],
-                    director=item["director"],
-                    author=item["author"],
+                    title=item.get("title"),
+                    summary=item.get("summary"),
+                    publish_date=item.get("publish_date"),
+                    release_year=item.get("release_year"),
+                    rate=item.get("rate"),
+                    duration=item.get("duration"),
+                    link=item.get("link"),
+                    director=item.get("director"),
+                    author=item.get("author"),
                 )
                 movie.save()
                 movie.categories.add(
