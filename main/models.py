@@ -24,6 +24,8 @@ class Movie(models.Model):
     rate = models.CharField(max_length=100)
     duration = models.CharField(max_length=10)
     link = models.URLField(max_length=500, null=True)
+    director = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
     categories = models.ManyToManyField(Category)
     artists = models.ManyToManyField(Artist)
 
