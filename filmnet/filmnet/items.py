@@ -1,11 +1,12 @@
 import scrapy
 from scrapy_djangoitem import DjangoItem
-from main.models import Movie, Genre
+from main.models import Movie, Category
 
 
 class MovieItem(DjangoItem):
     django_model = Movie
+    categories = scrapy.item.Field()
 
 
-class GenreItem(DjangoItem):
-    django_model = Genre
+class CategoryItem(DjangoItem):
+    django_model = Category
