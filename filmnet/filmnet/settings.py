@@ -14,7 +14,8 @@ NEWSPIDER_MODULE = "filmnet.filmnet.spiders"
 
 
 import sys
-sys.path.append('/home/mahdi/Documents/filmnet_crawler/')
+project_path = '/home/mahdi/Documents/filmnet_crawler/'
+sys.path.append(project_path)
 
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings'
@@ -25,7 +26,7 @@ django.setup()
 #USER_AGENT = "filmnet (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -71,8 +72,11 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+   "scrapy.pipelines.images.ImagesPipeline": 1,
    "filmnet.filmnet.pipelines.FilmnetPipeline": 300,
 }
+
+IMAGES_STORE = "images/"
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
