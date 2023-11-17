@@ -23,9 +23,9 @@ class Movie(models.Model):
     release_year = models.IntegerField()
     rate = models.CharField(max_length=100)
     duration = models.CharField(max_length=10)
-    link = models.URLField(max_length=500, null=True)
-    director = models.CharField(max_length=255)
-    author = models.CharField(max_length=255)
+    link = models.URLField(max_length=500)
+    director = models.CharField(max_length=255, null=True)
+    author = models.CharField(max_length=255, null=True)
     categories = models.ManyToManyField(Category)
     artists = models.ManyToManyField(Artist)
 
