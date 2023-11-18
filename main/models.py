@@ -3,14 +3,28 @@ from django.db import models
 
 class Category(models.Model):
     type = models.CharField(max_length=100)
-    title = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
 
 
-class Artist(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+class Cast(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Director(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -24,10 +38,10 @@ class Movie(models.Model):
     rate = models.CharField(max_length=100)
     duration = models.CharField(max_length=10)
     link = models.URLField(max_length=500)
-    director = models.CharField(max_length=255, null=True)
-    author = models.CharField(max_length=255, null=True)
+    directors = models.ManyToManyField(Director)
+    authors = models.ManyToManyField(Author)
+    casts = models.ManyToManyField(Cast)
     categories = models.ManyToManyField(Category)
-    artists = models.ManyToManyField(Artist)
 
     def __str__(self):
         return self.title

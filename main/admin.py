@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Movie, Category, Artist
+from .models import Movie, Category, Cast, Director, Author
 
 
 @admin.register(Movie)
@@ -11,8 +11,22 @@ class MovieAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-@admin.register(Artist)
-class ArtistAdmin(admin.ModelAdmin):
+@admin.register(Cast)
+class CastAdmin(admin.ModelAdmin):
+    list_display = ["name"]
+    list_per_page = 20
+    search_fields = ["name"]
+
+
+@admin.register(Director)
+class DirectorAdmin(admin.ModelAdmin):
+    list_display = ["name"]
+    list_per_page = 20
+    search_fields = ["name"]
+
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
     list_display = ["name"]
     list_per_page = 20
     search_fields = ["name"]
