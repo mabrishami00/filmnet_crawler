@@ -2,7 +2,7 @@ import scrapy
 import json
 
 from main.models import Category
-from filmnet.filmnet.items import MovieItem, CategoryItem, ImageItem, ArtistItem
+from filmnet.filmnet.items import MovieItem, CategoryItem, ImageItem, CastItem, DirectorItem, AuthorItem
 
 
 class FilmnetSpiderSpider(scrapy.Spider):
@@ -19,7 +19,7 @@ class FilmnetSpiderSpider(scrapy.Spider):
         movies = data.get("data")
         image_urls = []
         for movie in movies:
-            category_names = []
+            category_items = []
             categories = movie.get("categories", [])
             for category in categories:
                 items = category.get("items")
@@ -27,8 +27,7 @@ class FilmnetSpiderSpider(scrapy.Spider):
                     category_item = CategoryItem()
                     category_item["type"] = category.get("type")
                     category_item["title"] = item.get("title")
-                    category_names.append(item.get("title"))
-                    yield category_item
+                    category_items.append(category_item)
 
             movie_item = MovieItem()
             movie_item["title"] = movie.get("title")
@@ -39,7 +38,7 @@ class FilmnetSpiderSpider(scrapy.Spider):
             movie_item["duration"] = movie.get("duration")
             link = f"https://filmnet.ir/contents/{movie.get('short_id')}/{movie.get('slug')}"
             movie_item["link"] = link
-            movie_item["categories"] = category_names
+            movie_item["categories"] = category_items
             movie_item["type"] = movie.get("type")
 
             if movie.get("type") == "single_video":
@@ -58,26 +57,33 @@ class FilmnetSpiderSpider(scrapy.Spider):
             yield response.follow(next_link, self.parse)
 
     def parse_detail(self, response, movie_item):
-        all_tags = response.css(".css-165by6p").extract()
-        artist_names = []
-        for tag in all_tags:
-            selector = scrapy.Selector(text=tag)
+        script_data = response.xpath('//script[@id="__NEXT_DATA__" and @type="application/json"]/text()').get()
+        json_data = json.loads(script_data)
+        artists = json_data.get("props").get("pageProps").get("aggregate").get("artists")
 
-            if "بازیگر" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
-                artist_name = selector.css("p.css-1wuywbg.e1eum8tf0::text").get()
-                artist_names.append(artist_name)
-                artist_item = ArtistItem()
-                artist_item["name"] = artist_name
-                yield artist_item
-            if "کارگردان" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
-                movie_item["director"] = selector.css(
-                    "p.css-1wuywbg.e1eum8tf0::text"
-                ).get()
+        cast_items = []
+        director_items = []
+        author_items = []
 
-            if "نویسنده" in selector.css("p.css-1io4wcd.e1eum8tf0::text").get():
-                movie_item["author"] = selector.css(
-                    "p.css-1wuywbg.e1eum8tf0::text"
-                ).get()
 
-        movie_item["artists"] = artist_names
+        for artist in artists:
+            if "بازیگر" in artist.get("roles"):
+                cast_item = CastItem()
+                cast_item["name"] = artist.get("person").get("name")
+                cast_items.append(cast_item)
+            if "کارگردان" in artist.get("roles"):
+                director_item = DirectorItem()
+                director_item["name"] = artist.get("person").get("name")
+                director_items.append(director_item)
+            if "نویسنده" in artist.get("roles"):
+                author_item = AuthorItem()
+                author_item["name"] = artist.get("person").get("name")
+                author_items.append(author_item)
+                
+
+
+        movie_item["casts"] = cast_items
+        movie_item["directors"] = director_items
+        movie_item["authors"] = author_items
+
         yield movie_item
