@@ -2,13 +2,20 @@ import scrapy
 import json
 
 from main.models import Category
-from filmnet.filmnet.items import MovieItem, CategoryItem, ImageItem, CastItem, DirectorItem, AuthorItem
+from filmnet.filmnet.items import (
+    MovieItem,
+    CategoryItem,
+    ImageItem,
+    CastItem,
+    DirectorItem,
+    AuthorItem,
+)
 
 
 class FilmnetSpiderSpider(scrapy.Spider):
     name = "filmnet_spider"
     allowed_domains = ["filmnet.ir"]
-    NUMBER_OF_MOVIES_EACH_REQUEST = 25
+    NUMBER_OF_MOVIES_EACH_REQUEST = 2
     OFFSET = 0
     start_urls = [
         f"https://filmnet.ir/api-v2/video-contents?offset={OFFSET}&count={NUMBER_OF_MOVIES_EACH_REQUEST}&order=latest&query=&types=single_video&types=series&types=video_content_list"
@@ -43,8 +50,9 @@ class FilmnetSpiderSpider(scrapy.Spider):
 
             if movie.get("type") == "single_video":
                 image_urls.append(movie.get("cover_image").get("path"))
+                artist_link = f"https://filmnet.ir/_next/data/q21Yt6rkBGclcDbawKQ7u/contents/{movie.get('short_id')}/{movie.get('slug')}.json?id={movie.get('short_id')}&slug={movie.get('slug')}"
                 yield scrapy.Request(
-                    link,
+                    artist_link,
                     callback=self.parse_detail,
                     cb_kwargs={"movie_item": movie_item},
                 )
@@ -57,14 +65,14 @@ class FilmnetSpiderSpider(scrapy.Spider):
             yield response.follow(next_link, self.parse)
 
     def parse_detail(self, response, movie_item):
-        script_data = response.xpath('//script[@id="__NEXT_DATA__" and @type="application/json"]/text()').get()
-        json_data = json.loads(script_data)
-        artists = json_data.get("props").get("pageProps").get("aggregate").get("artists")
+        json_data = json.loads(response.body)
+        artists = (
+            json_data.get("pageProps").get("aggregate").get("artists")
+        )
 
         cast_items = []
         director_items = []
         author_items = []
-
 
         for artist in artists:
             if "بازیگر" in artist.get("roles"):
@@ -79,8 +87,6 @@ class FilmnetSpiderSpider(scrapy.Spider):
                 author_item = AuthorItem()
                 author_item["name"] = artist.get("person").get("name")
                 author_items.append(author_item)
-                
-
 
         movie_item["casts"] = cast_items
         movie_item["directors"] = director_items
