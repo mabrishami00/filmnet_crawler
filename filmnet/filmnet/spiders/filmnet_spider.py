@@ -47,10 +47,11 @@ class FilmnetSpiderSpider(scrapy.Spider):
             movie_item["link"] = link
             movie_item["categories"] = category_items
             movie_item["type"] = movie.get("type")
+            _id = movie.get("id")
 
             if movie.get("type") == "single_video":
                 image_urls.append(movie.get("cover_image").get("path"))
-                artist_link = f"https://filmnet.ir/_next/data/q21Yt6rkBGclcDbawKQ7u/contents/{movie.get('short_id')}/{movie.get('slug')}.json?id={movie.get('short_id')}&slug={movie.get('slug')}"
+                artist_link = f"https://filmnet.ir/api-v2/video-contents/{_id}/artists"
                 yield scrapy.Request(
                     artist_link,
                     callback=self.parse_detail,
@@ -66,24 +67,22 @@ class FilmnetSpiderSpider(scrapy.Spider):
 
     def parse_detail(self, response, movie_item):
         json_data = json.loads(response.body)
-        artists = (
-            json_data.get("pageProps").get("aggregate").get("artists")
-        )
+        artists = json_data.get("data")
 
         cast_items = []
         director_items = []
         author_items = []
 
         for artist in artists:
-            if "بازیگر" in artist.get("roles"):
+            if "بازیگر" in artist.get("person_role").get("title"):
                 cast_item = CastItem()
                 cast_item["name"] = artist.get("person").get("name")
                 cast_items.append(cast_item)
-            if "کارگردان" in artist.get("roles"):
+            if "کارگردان" in artist.get("person_role").get("title"):
                 director_item = DirectorItem()
                 director_item["name"] = artist.get("person").get("name")
                 director_items.append(director_item)
-            if "نویسنده" in artist.get("roles"):
+            if "نویسنده" in artist.get("person_role").get("title"):
                 author_item = AuthorItem()
                 author_item["name"] = artist.get("person").get("name")
                 author_items.append(author_item)
